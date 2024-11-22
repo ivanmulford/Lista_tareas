@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tareas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .task-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .task-text {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .checkbox {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Tareas</h1>
+        
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Escribe una nueva tarea...">
+            <button onclick="addTask()">Agregar</button>
+        </div>
+
+        <ul id="taskList" class="task-list">
+            <!-- Las tareas se agregarán aquí dinámicamente -->
+        </ul>
+
+        <p id="emptyMessage" class="empty-message">No hay tareas pendientes</p>
+    </div>
+
+    <script>
+        // Recuperar tareas guardadas al cargar la página
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        
+        // Función para guardar tareas en localStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            updateDisplay();
+        }
+
+        // Función para agregar una nueva tarea
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                tasks.push({
+                    text: text,
+                    completed: false,
+                    id: Date.now()
+                });
+                input.value = '';
+                saveTasks();
+            }
+        }
+
+        // Función para eliminar una tarea
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+        }
+
+        // Función para marcar una tarea como completada
+        function toggleTask(id) {
+            const task = tasks.find(task => task.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+            }
+        }
+
+        // Función para actualizar la visualización de las tareas
+        function updateDisplay() {
+            const taskList = document.getElementById('taskList');
+            const emptyMessage = document.getElementById('emptyMessage');
+            
+            // Limpiar la lista actual
+            taskList.innerHTML = '';
+            
+            // Mostrar mensaje si no hay tareas
+            emptyMessage.style.display = tasks.length ? 'none' : 'block';
+            
+            // Crear elementos para cada tarea
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                
+                li.innerHTML = `
+                    <input type="checkbox" class="checkbox" 
+                           ${task.completed ? 'checked' : ''} 
+                           onclick="toggleTask(${task.id})">
+                    <span class="task-text ${task.completed ? 'completed' : ''}">
+                        ${task.text}
+                    </span>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">
+                        Eliminar
+                    </button>
+                `;
+                
+                taskList.appendChild(li);
+            });
+        }
+
+        // Agregar tarea al presionar Enter
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Mostrar tareas al cargar la página
+        updateDisplay();
+    </script>
+</body>
+</html>
